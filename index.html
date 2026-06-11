@@ -1,36 +1,103 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
+    <title>SYSTEM_RESTORE</title>
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
-        
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
         /* Vídeo de Fundo */
         #bg-video {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            object-fit: cover; z-index: -1; filter: brightness(0.3);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -2;
+            filter: brightness(0.2) contrast(1.2); /* Bem escuro para dar ambiente */
         }
 
-        .interface {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100vh; color: #00ff00; font-family: monospace; text-align: center;
+        /* Interface inicial (Texto e Botão) */
+        #interface-inicial {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #00ff00;
+            text-align: center;
+            z-index: 10;
+            position: relative;
         }
 
-        /* Borda do Jogo */
-        #jogo-container { 
-            width: 800px; height: 600px; border: 4px solid #ff0000; 
-            display: none; background: #000;
+        h1 {
+            text-shadow: 0 0 5px #00ff00;
+            margin-bottom: 30px;
+            line-height: 1.5;
         }
 
-        /* Força o Ruffle a preencher a borda */
-        #jogo-container ruffle-player { width: 100%; height: 100%; }
+        button {
+            background: transparent;
+            color: #ff0000;
+            border: 2px solid #ff0000;
+            padding: 15px 40px;
+            cursor: pointer;
+            font-size: 40px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 5px #ff0000;
+            box-shadow: 0 0 10px #ff0000 inset, 0 0 10px #ff0000;
+        }
 
-        button { 
-            background: transparent; color: #ff0000; border: 2px solid #ff0000; 
-            padding: 20px 40px; cursor: pointer; font-size: 40px; margin-top: 20px;
+        button:hover {
+            background: #ff0000;
+            color: #000;
+            box-shadow: 0 0 20px #ff0000 inset, 0 0 20px #ff0000;
+        }
+
+        /* O Container que tem a moldura da imagem */
+        #moldura-container {
+            display: none; /* Escondido até clicar no botão */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px; /* Tamanho da imagem da moldura no ecrã */
+            height: 600px;
+            background-image: url('image_5740e3.jpg');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 5;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8); /* Sombra para destacar a moldura */
+        }
+
+        /* A área exata onde o jogo vai rodar (O buraco do monitor) */
+        #jogo-flash {
+            position: absolute;
+            /* ⚠️ AJUSTA ESTES VALORES PARA ENCAIXAR NO BURACO DA TUA IMAGEM ⚠️ */
+            top: 12%;    /* Distância do topo */
+            left: 10%;   /* Distância da esquerda */
+            width: 80%;  /* Largura do ecrã do monitor */
+            height: 75%; /* Altura do ecrã do monitor */
+            background-color: #000; /* Fundo preto caso o jogo demore a carregar */
+        }
+
+        /* Força o Ruffle a preencher o espaço do buraco */
+        ruffle-player {
+            width: 100%;
+            height: 100%;
         }
     </style>
-    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
 <body>
 
@@ -38,21 +105,29 @@
         <source src="Rayman & Globox having some friendly conversation.mp4" type="video/mp4">
     </video>
 
-    <div class="interface">
-        <h1 id="texto">>> UM MINIJOGO DO SENHOR RAMON FOI ENCONTRADO.<br> SEU AMIGO GLOBOX VAI VOAR.</h1>
-        <button id="btn-iniciar" onclick="iniciarTudo()">?</button>
-        <div id="jogo-container"></div>
+    <div id="interface-inicial">
+        <h1>>> UM MINIJOGO DO SENHOR RAMON FOI ENCONTRADO.<br> SEU AMIGO GLOBOX VAI VOAR.</h1>
+        <button id="btn-iniciar" onclick="iniciarSistema()">?</button>
+    </div>
+
+    <div id="moldura-container">
+        <div id="jogo-flash"></div>
     </div>
 
     <script>
-        function iniciarTudo() {
-            document.getElementById('texto').style.display = 'none';
-            document.getElementById('btn-iniciar').style.display = 'none';
-            document.getElementById('jogo-container').style.display = 'block';
+        function iniciarSistema() {
+            // 1. Esconder a interface inicial
+            document.getElementById('interface-inicial').style.display = 'none';
             
+            // 2. Mostrar a moldura do monitor
+            document.getElementById('moldura-container').style.display = 'block';
+            
+            // 3. Iniciar o Ruffle dentro da moldura
             const ruffle = window.RufflePlayer.newest();
             const player = ruffle.createPlayer();
-            document.getElementById("jogo-container").appendChild(player);
+            document.getElementById("jogo-flash").appendChild(player);
+            
+            // 4. Carregar o ficheiro .swf
             player.load("slap_flap_go.swf");
         }
     </script>
