@@ -76,7 +76,7 @@
         }
         #controls {
             margin-bottom: 15px;
-            display: none; /* Só aparece com jogo ativo */
+            display: none;
         }
         #close-btn {
             background-color: #ff3344;
@@ -124,21 +124,21 @@
         <h2>Flash Archive</h2>
         
         <div class="category-title">🎮 Jogos Clássicos</div>
-        <button class="game-btn" onclick="playGame('flash/alienhominidflashver.swf')">Alien Hominid</button>
-        <button class="game-btn" onclick="playGame('flash/slap_flap_go.swf')">Rayman: Slap, Flap & Go!</button>
+        <button class="game-btn" onclick="playGame('alienhominidflashver.swf')">Alien Hominid</button>
+        <button class="game-btn" onclick="playGame('slap_flap_go.swf')">Rayman: Slap, Flap & Go!</button>
 
         <div class="category-title">🔴 Universo Madness</div>
-        <button class="game-btn" onclick="playGame('flash/madnessinteractive.swf')">Madness Interactive (Jogo)</button>
-        <button class="game-btn" onclick="playGame('flash/madnessaccelerant.swf')">Madness Accelerant (Jogo)</button>
-        <button class="game-btn" onclick="playGame('flash/madness1.swf')">Madness Combat 1</button>
-        <button class="game-btn" onclick="playGame('flash/madness2.swf')">Madness Combat 2</button>
-        <button class="game-btn" onclick="playGame('flash/madness3.swf')">Madness Combat 3</button>
-        <button class="game-btn" onclick="playGame('flash/madness4.swf')">Madness Combat 4</button>
-        <button class="game-btn" onclick="playGame('flash/madness5.swf')">Madness Combat 5</button>
+        <button class="game-btn" onclick="playGame('madnessinteractive.swf')">Madness Interactive (Jogo)</button>
+        <button class="game-btn" onclick="playGame('madnessaccelerant.swf')">Madness Accelerant (Jogo)</button>
+        <button class="game-btn" onclick="playGame('madness1.swf')">Madness Combat 1</button>
+        <button class="game-btn" onclick="playGame('madness2.swf')">Madness Combat 2</button>
+        <button class="game-btn" onclick="playGame('madness3.swf')">Madness Combat 3</button>
+        <button class="game-btn" onclick="playGame('madness4.swf')">Madness Combat 4</button>
+        <button class="game-btn" onclick="playGame('madness5.swf')">Madness Combat 5</button>
 
         <div class="category-title">🎬 Animações & Trilhas</div>
-        <button class="game-btn" onclick="playGame('flash/382576_rawestforest.swf')">Rawest Forest (SMRPG)</button>
-        <button class="game-btn" onclick="playGame('flash/574257_waltzoftheforestFINAL.swf')">Waltz of the Forest</button>
+        <button class="game-btn" onclick="playGame('382576_rawestforest.swf')">Rawest Forest (SMRPG)</button>
+        <button class="game-btn" onclick="playGame('574257_waltzoftheforestFINAL.swf')">Waltz of the Forest</button>
     </div>
 
     <div id="main-content">
@@ -160,10 +160,8 @@
         function playGame(swfUrl) {
             closeGame();
 
-            // Mensagem amigável enquanto o arquivo é baixado
             container.innerHTML = '<div id="placeholder-text" style="color: #ffcc00;">📥 Baixando e inicializando conteúdo...<br><span style="font-size: 0.85rem; color: #888;">Por favor, aguarde alguns instantes.</span></div>';
 
-            // Pequena folga para renderizar o texto antes do carregamento do arquivo
             setTimeout(() => {
                 activePlayer = ruffle.createPlayer();
                 container.innerHTML = ''; 
@@ -192,4 +190,3 @@
     </script>
 </body>
 </html>
-
