@@ -1,170 +1,195 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SYSTEM_RESTORE</title>
-    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade de Preservação Flash</title>
     <style>
-        body, html {
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f0f12;
+            color: #e0e0e6;
             margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-            background-color: #000;
-            font-family: 'Courier New', Courier, monospace;
-        }
-
-        /* Vídeo de Fundo */
-        #bg-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
+            display: flex;
             height: 100vh;
-            object-fit: cover;
-            z-index: -2;
-            filter: brightness(0.2) contrast(1.2); /* Bem escuro para dar ambiente */
+            overflow: hidden;
         }
 
-        /* Interface inicial (Texto e Botão) */
-        #interface-inicial {
+        /* Menu Lateral (Sidebar) */
+        #sidebar {
+            width: 280px;
+            background-color: #16161a;
+            padding: 20px;
+            box-shadow: 3px 0 10px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            border-right: 1px solid #24242b;
+        }
+        #sidebar h2 { 
+            margin-top: 0; 
+            font-size: 1.3rem; 
+            text-align: center; 
+            color: #ffcc00;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid #ffcc00;
+            padding-bottom: 8px;
+        }
+        .category-title {
+            font-size: 0.85rem;
+            color: #888893;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+        .game-btn {
+            background-color: #24242b;
+            color: #e0e0e6;
+            border: 1px solid #2c2c35;
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        .game-btn:hover { 
+            background-color: #ffcc00; 
+            color: #0f0f12; 
+            font-weight: bold;
+            transform: translateX(3px);
+        }
+        
+        /* Área Principal do Player */
+        #main-content {
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            color: #00ff00;
-            text-align: center;
-            z-index: 10;
-            position: relative;
+            padding: 20px;
+            background-image: radial-gradient(circle, #1a1a24 0%, #0f0f12 100%);
         }
-
-        h1 {
-            text-shadow: 0 0 5px #00ff00;
-            margin-bottom: 30px;
-            line-height: 1.5;
+        #controls {
+            margin-bottom: 15px;
+            display: none; /* Só aparece com jogo ativo */
         }
-
-        button {
-            background: transparent;
-            color: #ff0000;
-            border: 2px solid #ff0000;
-            padding: 15px 40px;
+        #close-btn {
+            background-color: #ff3344;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 40px;
-            font-family: inherit;
-            transition: all 0.3s ease;
-            text-shadow: 0 0 5px #ff0000;
-            box-shadow: 0 0 10px #ff0000 inset, 0 0 10px #ff0000;
+            font-weight: bold;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 10px rgba(255, 51, 68, 0.3);
+            transition: 0.2s;
         }
-
-        button:hover {
-            background: #ff0000;
-            color: #000;
-            box-shadow: 0 0 20px #ff0000 inset, 0 0 20px #ff0000;
+        #close-btn:hover { 
+            background-color: #e62030; 
+            transform: scale(1.02);
         }
-
-        /* O Container que tem a moldura da imagem */
-        #moldura-container {
-            display: none; /* Escondido até clicar no botão */
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 800px; /* Tamanho da imagem da moldura no ecrã */
+        
+        /* Container do Ruffle */
+        #player-container {
+            width: 800px;
             height: 600px;
-            background-image: url('image_5740e3.jpg');
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            background-position: center;
-            z-index: 5;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8); /* Sombra para destacar a moldura */
+            background-color: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #24242b;
         }
-
-        /* A área exata onde o jogo vai rodar (O buraco do monitor) */
-        #jogo-flash {
-            position: absolute;
-            /* AJUSTA ESTES VALORES PARA ENCAIXAR NO BURACO DA TUA IMAGEM */
-            top: 12%;    /* Distância do topo */
-            left: 10%;   /* Distância da esquerda */
-            width: 80%;  /* Largura do ecrã do monitor */
-            height: 75%; /* Altura do ecrã do monitor */
-            background-color: #000; /* Fundo preto caso o jogo demore a carregar */
-        }
-
-        /* Força o Ruffle a preencher o espaço do buraco */
-        ruffle-player {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Container do Efeito CRT */
-        #crt-overlay {
-            position: absolute;
-            /* Estes valores TÊM de ser iguais aos do #jogo-flash acima */
-            top: 12%;    
-            left: 10%;   
-            width: 80%;  
-            height: 75%; 
-            
-            /* Cria as scanlines horizontais */
-            background: linear-gradient(
-                to bottom,
-                rgba(18, 16, 16, 0) 50%,
-                rgba(0, 0, 0, 0.25) 50%
-            );
-            background-size: 100% 4px; /* Altura das scanlines */
-            
-            /* Garante que fica por cima do jogo Ruffle */
-            z-index: 10; 
-            
-            /* Impede que o overlay bloqueie os cliques do rato no jogo! */
-            pointer-events: none; 
-            
-            /* Adiciona o efeito de brilho trémulo (flicker) */
-            animation: flicker 0.15s infinite;
-        }
-
-        /* Animação para o flicker (tremor de brilho) */
-        @keyframes flicker {
-            0% { opacity: 0.97; }
-            50% { opacity: 1; }
-            100% { opacity: 0.98; }
+        #placeholder-text { 
+            color: #575765; 
+            font-style: italic; 
+            text-align: center;
+            font-size: 1.1rem;
         }
     </style>
+    
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
 <body>
 
-    <video id="bg-video" autoplay loop muted playsinline>
-        <source src="Rayman & Globox having some friendly conversation.mp4" type="video/mp4">
-    </video>
+    <div id="sidebar">
+        <h2>Flash Archive</h2>
+        
+        <div class="category-title">🎮 Jogos Clássicos</div>
+        <button class="game-btn" onclick="playGame('flash/isaac.swf')">The Binding of Isaac</button>
+        <button class="game-btn" onclick="playGame('flash/alienhominidflashver.swf')">Alien Hominid</button>
+        <button class="game-btn" onclick="playGame('flash/slap_flap_go.swf')">Rayman: Slap, Flap & Go!</button>
 
-    <div id="interface-inicial">
-        <h1>>> UM MINIJOGO DO SENHOR RAMON FOI ENCONTRADO.<br> SEU AMIGO GLOBOX VAI VOAR.</h1>
-        <button id="btn-iniciar" onclick="iniciarSistema()">?</button>
+        <div class="category-title">🔴 Universo Madness</div>
+        <button class="game-btn" onclick="playGame('flash/madnessinteractive.swf')">Madness Interactive (Jogo)</button>
+        <button class="game-btn" onclick="playGame('flash/madnessaccelerant.swf')">Madness Accelerant (Jogo)</button>
+        <button class="game-btn" onclick="playGame('flash/madness1.swf')">Madness Combat 1</button>
+        <button class="game-btn" onclick="playGame('flash/madness2.swf')">Madness Combat 2</button>
+        <button class="game-btn" onclick="playGame('flash/madness3.swf')">Madness Combat 3</button>
+        <button class="game-btn" onclick="playGame('flash/madness4.swf')">Madness Combat 4</button>
+        <button class="game-btn" onclick="playGame('flash/madness5.swf')">Madness Combat 5</button>
+
+        <div class="category-title">🎬 Animações & Trilhas</div>
+        <button class="game-btn" onclick="playGame('flash/382576_rawestforest.swf')">Rawest Forest (SMRPG)</button>
+        <button class="game-btn" onclick="playGame('flash/574257_waltzoftheforestFINAL.swf')">Waltz of the Forest</button>
     </div>
 
-    <div id="moldura-container">
-        <div id="jogo-flash"></div>
+    <div id="main-content">
+        <div id="controls">
+            <button id="close-btn" onclick="closeGame()">❌ Fechar Conteúdo Atual</button>
+        </div>
         
-        <div id="crt-overlay"></div>
+        <div id="player-container">
+            <div id="placeholder-text">Selecione um jogo ou animação<br>no menu lateral para iniciar.</div>
+        </div>
     </div>
 
     <script>
-        function iniciarSistema() {
-            // 1. Esconder a interface inicial
-            document.getElementById('interface-inicial').style.display = 'none';
+        // Inicializa o motor do Ruffle
+        const ruffle = window.RufflePlayer.newest();
+        const container = document.getElementById('player-container');
+        const controls = document.getElementById('controls');
+        let activePlayer = null;
+
+        function playGame(swfUrl) {
+            // Garante a destruição total do Flash anterior (limpa cache de áudio e tela)
+            closeGame();
+
+            // Instancia o novo player do Ruffle
+            activePlayer = ruffle.createPlayer();
+            container.innerHTML = ''; 
+            container.appendChild(activePlayer);
+
+            // Ajusta o comportamento de tela cheia dentro da div
+            activePlayer.style.width = "100%";
+            activePlayer.style.height = "100%";
             
-            // 2. Mostrar a moldura do monitor
-            document.getElementById('moldura-container').style.display = 'block';
-            
-            // 3. Iniciar o Ruffle dentro da moldura
-            const ruffle = window.RufflePlayer.newest();
-            const player = ruffle.createPlayer();
-            document.getElementById("jogo-flash").appendChild(player);
-            
-            // 4. Carregar o ficheiro .swf
-            player.load("slap_flap_go.swf");
+            // Carrega o arquivo solicitado
+            activePlayer.load({
+                url: swfUrl,
+                allowScriptAccess: false
+            });
+
+            // Exibe o botão de controle
+            controls.style.display = 'block';
+        }
+
+        function closeGame() {
+            if (activePlayer) {
+                activePlayer.remove(); // Remove o elemento do DOM, matando processos e áudios instantaneamente
+                activePlayer = null;
+            }
+            // Reseta para a tela inicial neutra
+            container.innerHTML = '<div id="placeholder-text">Selecione um jogo ou animação<br>no menu lateral para iniciar.</div>';
+            controls.style.display = 'none';
         }
     </script>
 </body>
